@@ -1,4 +1,4 @@
-# Smart-Agro-Assistant
+<img width="1200" height="500" alt="accuracy_loss_plot" src="https://github.com/user-attachments/assets/650a4efc-fd20-49d9-858b-69f0d6465d91" /># Smart-Agro-Assistant
 Smart Agro Assistant is a multilingual AI tool that helps farmers with plant disease detection and crop recommendations. It uses image-based CNN models, AI-generated treatment advice, and voice/text interaction to make farming smarter and more accessible, even for non-technical users.
 
 # Features
@@ -33,3 +33,5 @@ Smart Agro Assistant is a multilingual AI tool that helps farmers with plant dis
 
 3. **Install Dependencies**
     pip install required libraries (Note: Tensorflow and Keras should be in same version Eg: tensorflow==2.13.0 and Keras==2.13.1)
+
+
