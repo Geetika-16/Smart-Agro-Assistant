@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Smart Agro Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    body{margin:0;min-height:100vh;}
+    .auth-page{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;}
+    .auth-left{
+      background:linear-gradient(145deg,#0d2918,#2d6a4f);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:60px 50px;position:relative;overflow:hidden;
+    }
+    .auth-left::before{
+      content:'';position:absolute;inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%2352b788' fill-opacity='.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .auth-illustration{font-size:5rem;margin-bottom:28px;animation:wave 3s ease-in-out infinite}
+    .auth-left h2{font-family:var(--font-display);font-size:2rem;color:white;margin-bottom:14px;text-align:center;}
+    .auth-left p{color:rgba(255,255,255,.6);font-size:.92rem;text-align:center;line-height:1.8;max-width:280px;}
+    .auth-left .brand{display:flex;align-items:center;gap:12px;color:white;font-family:var(--font-display);font-size:1.6rem;font-weight:700;margin-bottom:40px;position:relative;z-index:2;}
+    .auth-left .brand .logo-icon{width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,var(--green-light),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.4rem;}
+    .auth-right{background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 50px;}
+    .auth-form-box{width:100%;max-width:400px;}
+    .auth-form-box h1{font-family:var(--font-display);font-size:2.2rem;font-weight:700;color:var(--green-deep);margin-bottom:6px;}
+    .auth-form-box .subtitle{color:var(--text-light);font-size:.92rem;margin-bottom:36px;}
+    .phone-field{display:flex;gap:8px;}
+    .phone-prefix{padding:14px 14px;border:2px solid var(--green-pale);border-radius:var(--r-md);background:white;color:var(--text-mid);font-weight:700;font-size:1rem;min-width:68px;display:flex;align-items:center;justify-content:center;}
+    .auth-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+    .auth-link{text-align:center;font-size:.88rem;color:var(--text-light);}
+    .auth-link a{color:var(--green-mid);font-weight:700;}
+    .login-note{background:var(--green-ultra);border-radius:var(--r-md);padding:14px 18px;font-size:.84rem;color:var(--text-mid);display:flex;align-items:center;gap:8px;margin-bottom:20px;}
+    @media(max-width:768px){.auth-page{grid-template-columns:1fr;}.auth-left{display:none;}.auth-right{padding:40px 24px;}}
+  </style>
+  <!-- ══ Google Translate Widget ══ -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        autoDisplay: false
+    }, 'google_translate_element');
+}
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<!-- ══════════════════════════════ -->
+</head>
+<body>
+  <div id="google_translate_element" style="display:none;"></div>
+  <div class="auth-page">
+    <div class="auth-left">
+      <div class="leaves-container"></div>
+      <div class="brand" style="position:relative;z-index:2">
+        <div class="logo-icon">🌾</div>
+        Smart Agro
+      </div>
+      <div class="auth-illustration">🌿</div>
+      <h2 style="position:relative;z-index:2">Welcome Back,<br>Farmer!</h2>
+      <p style="position:relative;z-index:2">Log in to access your personalised farming assistant and continue where you left off.</p>
+    </div>
+
+    <div class="auth-right">
+      <div class="auth-form-box animate-fade-up">
+        <h1>Welcome Back 👋</h1>
+        <p class="subtitle">Enter your phone number to login instantly</p>
+
+        <div class="login-note">
+          💡 No password needed! We identify you by your registered phone number.
+        </div>
+
+        <form action="/login" method="POST" class="form-stack" id="login-form" style="display:flex;flex-direction:column;gap:18px;">
+          <div class="form-group">
+            <label>📱 Phone Number</label>
+            <div class="phone-field">
+              <input type="tel"
+              id="phone"
+              name="phone"
+              class="form-control"
+              placeholder="Enter Phone Number"
+              required
+              >
+            </div>
+          </div>
+
+          <div class="auth-actions">
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:15px;">
+              🚀 Login
+            </button>
+            <button type="button" class="btn btn-read" style="width:100%;justify-content:center"
+                    onclick="AgroApp.readAloudText('Welcome back. Enter your 10 digit phone number to login to Smart Agro Assistant.')">
+              🔊 Read Aloud
+            </button>
+          </div>
+
+          <div class="auth-link">
+            New user? <a href="/register">Create account →</a>
+          </div>
+          <div class="auth-link">
+            <a href="/">← Change language</a>
+          </div>
+        </form>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for cat, msg in messages %}
+              <div>{{ msg }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>initLeaves && initLeaves();</script>
+
+</body>
+</html>

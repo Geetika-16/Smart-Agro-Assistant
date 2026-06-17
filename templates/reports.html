@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Reports — Smart Agro</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <style>
+    body{background:var(--cream)}
+    .page-main{padding-top:70px}
+    .reports-hero{
+      background:linear-gradient(135deg,#0d2918,#1a3d2b,#2a5c44);
+      padding:52px 40px 48px;position:relative;overflow:hidden;
+    }
+    .reports-hero::after{content:'📊';position:absolute;right:60px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.08;}
+    .reports-hero .inner{max-width:1100px;margin:0 auto;}
+    .reports-hero h1{font-family:var(--font-display);font-size:2.2rem;color:white;margin-bottom:8px;}
+    .reports-hero p{color:rgba(255,255,255,.6);font-size:.92rem;line-height:1.7;max-width:500px;}
+
+    .reports-body{max-width:1100px;margin:0 auto;padding:50px 40px 80px;}
+
+    /* ── Profile + stats ── */
+    .top-section{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:start;margin-bottom:40px;}
+    .stats-mini{display:flex;gap:16px;flex-wrap:wrap;}
+
+    /* ── Filter tabs + search ── */
+    .filter-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:28px;}
+    .search-mini{display:flex;gap:8px;}
+    .search-mini input{padding:9px 16px;border:2px solid var(--green-pale);border-radius:var(--r-pill);font-size:.85rem;outline:none;width:200px;transition:var(--transition);}
+    .search-mini input:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rgba(82,183,136,.12);}
+
+    /* ── Reports layout ── */
+    .reports-grid{display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start;}
+    .reports-list{display:flex;flex-direction:column;gap:14px;}
+
+    /* Report item card */
+    .report-item{
+      background:white;border-radius:var(--r-lg);padding:22px 24px;
+      box-shadow:var(--shadow-soft);cursor:pointer;transition:var(--transition);
+      border-left:5px solid transparent;display:flex;gap:18px;align-items:flex-start;
+    }
+    .report-item:hover{box-shadow:var(--shadow-mid);transform:translateX(3px);}
+    .report-item.disease-item{border-color:var(--amber);}
+    .report-item.crop-item{border-color:var(--green-light);}
+    .report-item.selected{border-color:var(--green-mid);background:var(--green-ultra);}
+    .report-icon{
+      width:46px;height:46px;border-radius:var(--r-md);flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+    }
+    .report-icon.disease{background:#fce8e8;}
+    .report-icon.crop{background:var(--green-ultra);}
+    .report-meta{flex:1;}
+    .report-meta h4{font-family:var(--font-display);font-size:1rem;color:var(--green-deep);margin-bottom:4px;}
+    .report-meta p{font-size:.82rem;color:var(--text-light);line-height:1.5;margin-bottom:6px;}
+    .report-meta .report-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .report-time{font-size:.75rem;color:var(--green-light);font-weight:700;}
+    .report-type-badge{
+      padding:2px 10px;border-radius:var(--r-pill);font-size:.72rem;font-weight:700;
+    }
+    .type-disease{background:#fce8e8;color:#c62828;}
+    .type-crop{background:var(--green-ultra);color:var(--green-mid);}
+
+    /* ── Detail panel ── */
+    .detail-panel{
+      position:sticky;top:90px;
+      background:white;border-radius:var(--r-xl);padding:28px;
+      box-shadow:var(--shadow-mid);
+    }
+    .detail-panel.empty{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:300px;background:var(--green-ultra);
+      border:2px dashed var(--green-pale);
+      color:var(--text-light);text-align:center;gap:10px;
+    }
+    .detail-panel.empty span{font-size:3rem;}
+    .detail-panel.empty p{font-size:.88rem;}
+    .dp-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--green-ultra);}
+    .dp-icon{width:50px;height:50px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:1.5rem;}
+    .dp-title{font-family:var(--font-display);font-size:1.1rem;color:var(--green-deep);}
+    .dp-time{font-size:.78rem;color:var(--text-light);margin-top:2px;}
+    .dp-body p{font-size:.87rem;color:var(--text-mid);line-height:1.8;margin-bottom:14px;}
+    .dp-actions{display:flex;flex-direction:column;gap:8px;margin-top:18px;}
+
+    /* ── Empty state ── */
+    .empty-state{
+      background:white;border-radius:var(--r-xl);padding:70px 40px;
+      text-align:center;box-shadow:var(--shadow-soft);grid-column:1/-1;
+    }
+    .empty-state span{font-size:4rem;display:block;margin-bottom:16px;}
+    .empty-state h3{font-family:var(--font-display);font-size:1.4rem;color:var(--green-deep);margin-bottom:10px;}
+    .empty-state p{font-size:.9rem;color:var(--text-light);margin-bottom:24px;}
+
+    @media(max-width:900px){
+      .reports-grid{grid-template-columns:1fr;}
+      .detail-panel{position:static;}
+      .top-section{grid-template-columns:1fr;}
+    }
+    @media(max-width:640px){
+      .reports-body{padding:30px 20px 60px;}
+      .reports-hero{padding:40px 20px;}
+    }
+  </style>
+  <!-- ══ Google Translate Widget ══ -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        autoDisplay: false
+    }, 'google_translate_element');
+}
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<!-- ══════════════════════════════ -->
+</head>
+<body>
+  <div id="google_translate_element" style="display:none;"></div>
+  <div class="leaves-container"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-icon">🌾</div>
+      <span>Smart Agro Assistant</span>
+    </div>
+    <div class="header-right">
+      <button class="voice-btn">🎙️</button>
+      <div class="lang-badge" onclick="window.location.href='/'">🌐 <span id="selected-lang-display">English</span></div>
+      <a href="/dashboard" class="btn btn-glass" style="padding:8px 16px;font-size:.82rem;">← Dashboard</a>
+    </div>
+  </header>
+
+  <main class="page-main">
+    <!-- Hero -->
+    <div class="reports-hero">
+      <div class="inner animate-slide-right">
+        <div style="color:rgba(255,255,255,.5);font-size:.85rem;margin-bottom:12px;cursor:pointer;" onclick="window.location.href='/dashboard'">← Back to Dashboard</div>
+        <h1>📊 My Saved Reports</h1>
+        <p>View your complete history of plant disease detections and crop recommendations. Click any report to see full details.</p>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="reports-body">
+      <!-- Profile + stats -->
+      <div class="top-section animate-fade-up">
+        <div class="profile-card">
+          <div class="profile-avatar">👨‍🌾</div>
+          <div class="profile-info">
+            <!-- Flask will inject user data via Jinja2 -->
+            <h2>{{ user.name or 'Farmer' }}</h2>
+            <p>📱 +91 {{ user.phone or 'XXXXXXXXXX' }}</p>
+            <p>🎂 Member since {{ user.joined or '2025' }}</p>
+            <div class="profile-badge">🌿 Active Farmer</div>
+          </div>
+        </div>
+        <div class="stats-mini">
+          <div class="stat-card" style="min-width:110px;">
+            <div class="stat-num" id="stat-total">0</div>
+            <div class="stat-label">Total Reports</div>
+          </div>
+          <div class="stat-card" style="min-width:110px;">
+            <div class="stat-num" id="stat-disease" style="color:var(--amber);">0</div>
+            <div class="stat-label">Diseases Found</div>
+          </div>
+          <div class="stat-card" style="min-width:110px;">
+            <div class="stat-num" id="stat-crop">0</div>
+            <div class="stat-label">Crop Queries</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar animate-fade-up delay-1">
+        <div class="tab-bar" data-group="reports">
+          <button class="tab-btn active" data-tab="all" data-group="reports" onclick="filterReports('all')">All Reports</button>
+          <button class="tab-btn" data-tab="disease" data-group="reports" onclick="filterReports('disease')">🌿 Disease</button>
+          <button class="tab-btn" data-tab="crop" data-group="reports" onclick="filterReports('crop')">🌾 Crop</button>
+        </div>
+        <div class="search-mini">
+          <input type="text" id="report-search" placeholder="Search reports…" oninput="searchReports(this.value)" />
+          <button class="btn btn-outline" style="padding:9px 16px;font-size:.82rem;" onclick="exportReports()">⬇ Export</button>
+        </div>
+      </div>
+
+      <!-- Reports + detail panel -->
+      <div class="reports-grid animate-fade-up delay-2">
+        <!-- Left: list -->
+        <div class="reports-list" id="reports-list">
+          <!-- Injected by JS / Jinja2 -->
+        </div>
+
+        <!-- Right: detail panel -->
+        <div class="detail-panel empty" id="detail-panel">
+          <span>📋</span>
+          <p>Click a report on the left to see full details here</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    // ─── Reports data (from Flask) ─────────────────────────────
+    // Replace with: const allReports = {{ reports | tojson }};
+    const allReports = {{ reports | tojson | safe }};
+    let filteredReports = [...allReports];
+    let activeFilter = 'all';
+    let selectedId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initLeaves(); initVoiceBtn(); initLangDisplay(); initToast();
+      renderReports(allReports);
+      updateStats(allReports);
+    });
+
+    function renderReports(list) {
+      const container = document.getElementById('reports-list');
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span>🌱</span>
+            <h3>No reports yet</h3>
+            <p>Use plant disease detection or crop recommendation to generate reports</p>
+            <a href="/disease" class="btn btn-primary">🌿 Start Detecting</a>
+          </div>`;
+        return;
+      }
+      container.innerHTML = list.map(r => `
+        <div class="report-item ${r.type}-item ${selectedId===r.id?'selected':''}" onclick="selectReport(${r.id})" id="ri-${r.id}">
+          <div class="report-icon ${r.type}">${r.icon}</div>
+          <div class="report-meta">
+            <h4>${r.title}</h4>
+            <p>${r.summary}</p>
+            <div class="report-footer">
+              <span class="report-type-badge type-${r.type}">${r.type==='disease'?'🌿 Disease':'🌾 Crop'}</span>
+              <span class="report-time">🕐 ${r.date}</span>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    function updateStats(list) {
+      const total = list.length;
+      const disease = list.filter(r => r.type === 'disease').length;
+      const crop = list.filter(r => r.type === 'crop').length;
+      AgroApp.animateCount(document.getElementById('stat-total'), total);
+      AgroApp.animateCount(document.getElementById('stat-disease'), disease);
+      AgroApp.animateCount(document.getElementById('stat-crop'), crop);
+    }
+
+    function selectReport(id) {
+      selectedId = id;
+      const report = allReports.find(r => r.id === id);
+      if (!report) return;
+      document.querySelectorAll('.report-item').forEach(el => el.classList.remove('selected'));
+      document.getElementById(`ri-${id}`)?.classList.add('selected');
+
+      const panel = document.getElementById('detail-panel');
+      panel.className = 'detail-panel';
+      panel.innerHTML = `
+        <div class="dp-header">
+          <div class="dp-icon ${report.type === 'disease' ? 'style="background:#fce8e8"' : 'style="background:var(--green-ultra)"'}">${report.icon}</div>
+          <div>
+            <div class="dp-title">${report.title}</div>
+            <div class="dp-time">🕐 ${report.date}</div>
+          </div>
+        </div>
+        <div class="dp-body">
+          <span class="report-type-badge type-${report.type}" style="margin-bottom:14px;display:inline-block;">
+            ${report.type === 'disease' ? '🌿 Disease Detection' : '🌾 Crop Recommendation'}
+          </span>
+          <p><strong>Summary:</strong><br>${report.summary}</p>
+          <p><strong>AI Recommendation:</strong><br>${report.result}</p>
+        </div>
+        <div class="dp-actions">
+          <button class="btn btn-read" style="justify-content:center;" onclick="AgroApp.readAloudText('${report.title}. ${report.result}')">🔊 Read Aloud</button>
+          <button class="btn btn-outline" style="justify-content:center;" onclick="deleteReport(${report.id})">🗑 Delete Report</button>
+        </div>`;
+    }
+
+    function filterReports(type) {
+      activeFilter = type;
+      filteredReports = type === 'all' ? [...allReports] : allReports.filter(r => r.type === type);
+      renderReports(filteredReports);
+    }
+
+    function searchReports(q) {
+      const base = activeFilter === 'all' ? allReports : allReports.filter(r => r.type === activeFilter);
+      const lower = q.toLowerCase();
+      renderReports(base.filter(r =>
+        r.title.toLowerCase().includes(lower) || r.summary.toLowerCase().includes(lower)));
+    }
+
+    function deleteReport(id) {
+      if (!confirm('Delete this report?')) return;
+      const idx = allReports.findIndex(r => r.id === id);
+      if (idx > -1) allReports.splice(idx, 1);
+      selectedId = null;
+      document.getElementById('detail-panel').className = 'detail-panel empty';
+      document.getElementById('detail-panel').innerHTML = '<span>📋</span><p>Click a report to see details</p>';
+      filterReports(activeFilter);
+      updateStats(allReports);
+      AgroApp.showToast('🗑 Report deleted');
+      // Also call: fetch('/api/delete-report/'+id, {method:'DELETE'})
+    }
+
+    function exportReports() {
+      const rows = [['ID','Type','Title','Summary','Date']];
+      allReports.forEach(r => rows.push([r.id, r.type, r.title, r.summary, r.date]));
+      const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'agro_reports.csv';
+      a.click();
+      AgroApp.showToast('📥 Reports exported as CSV!');
+    }
+  </script>
+</body>
+</html>

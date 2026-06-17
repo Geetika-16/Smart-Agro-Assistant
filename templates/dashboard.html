@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Smart Agro Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    body{background:var(--cream)}
+    /* ── Hero Banner ── */
+    .dash-hero{
+      background:linear-gradient(135deg,#0d2918 0%,#1a3d2b 40%,#2d6a4f 100%);
+      padding:110px 40px 80px;
+      position:relative;overflow:hidden;
+    }
+    .dash-hero::before{
+      content:'';position:absolute;right:-80px;top:-80px;
+      width:420px;height:420px;border-radius:50%;
+      background:radial-gradient(circle,rgba(82,183,136,.18),transparent 70%);
+    }
+    .dash-hero::after{
+      content:'🌾';position:absolute;right:80px;bottom:-10px;
+      font-size:9rem;opacity:.08;transform:rotate(-15deg);
+    }
+    .hero-inner{max-width:1100px;margin:0 auto;position:relative;z-index:2;}
+    .hero-greeting{
+      font-family:var(--font-accent);font-size:1.3rem;color:var(--green-pale);margin-bottom:8px;
+    }
+    .hero-title{
+      font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);
+      font-weight:900;color:white;line-height:1.15;margin-bottom:16px;
+    }
+    .hero-title span{color:var(--gold-bright)}
+    .hero-sub{color:rgba(255,255,255,.6);font-size:.95rem;max-width:480px;line-height:1.7;margin-bottom:28px;}
+    .hero-stats{
+      display:flex;gap:28px;flex-wrap:wrap;
+    }
+    .hero-stat{
+      display:flex;align-items:center;gap:10px;
+      background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+      border-radius:var(--r-pill);padding:10px 18px;
+      color:white;font-size:.88rem;
+    }
+    .hero-stat strong{font-size:1.15rem;font-family:var(--font-display);}
+
+    /* ── Main features section ── */
+    .features-section{padding:70px 40px;background:var(--cream);}
+    .features-section .container{max-width:1100px;margin:0 auto;}
+    .features-header{margin-bottom:44px;}
+    .features-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+    }
+    /* Card color accents */
+    .card-disease .card-icon{background:linear-gradient(135deg,#fce4d4,#f4a261)}
+    .card-crop    .card-icon{background:linear-gradient(135deg,#d8f3dc,#52b788)}
+    .card-reports .card-icon{background:linear-gradient(135deg,#dbeafe,#60a5fa)}
+
+    .card-link{display:block;color:inherit;text-decoration:none;}
+
+    /* ── About section ── */
+    .about-section{padding:70px 40px;background:white;}
+    .about-section .container{max-width:1100px;margin:0 auto;}
+    .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+    .about-img-box{
+      background:linear-gradient(135deg,var(--green-ultra),var(--green-pale));
+      border-radius:var(--r-xl);padding:50px;text-align:center;font-size:7rem;
+      animation:sway 5s ease-in-out infinite;
+    }
+    .about-content h2{font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--green-deep);margin-bottom:14px;}
+    .about-content p{font-size:.95rem;color:var(--text-light);line-height:1.8;margin-bottom:28px;}
+    .about-features{display:flex;flex-direction:column;gap:14px;}
+    .about-feat{display:flex;align-items:flex-start;gap:14px;padding:16px;background:var(--green-ultra);border-radius:var(--r-md);}
+    .about-feat-icon{width:38px;height:38px;border-radius:var(--r-sm);background:white;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+    .about-feat-text h4{font-size:.92rem;font-weight:700;color:var(--green-deep);margin-bottom:2px;}
+    .about-feat-text p{font-size:.82rem;color:var(--text-light);}
+
+    /* ── How it works ── */
+    .how-section{padding:70px 40px;background:var(--green-ultra);}
+    .how-section .container{max-width:1100px;margin:0 auto;}
+    .steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:44px;position:relative;}
+    .steps-grid::before{
+      content:'';position:absolute;top:32px;left:10%;right:10%;
+      height:2px;background:linear-gradient(90deg,var(--green-pale),var(--green-light),var(--green-pale));
+      z-index:0;
+    }
+    .step-card{
+      background:white;border-radius:var(--r-lg);padding:28px 20px;text-align:center;
+      box-shadow:var(--shadow-soft);position:relative;z-index:1;
+    }
+    .step-num{
+      width:56px;height:56px;border-radius:50%;
+      background:linear-gradient(135deg,var(--green-mid),var(--green-deep));
+      color:white;font-family:var(--font-display);font-size:1.4rem;font-weight:700;
+      display:flex;align-items:center;justify-content:center;margin:0 auto 16px;
+      box-shadow:0 6px 16px rgba(45,106,79,.35);
+    }
+    .step-card h4{font-family:var(--font-display);font-size:.95rem;color:var(--green-deep);margin-bottom:8px;}
+    .step-card p{font-size:.82rem;color:var(--text-light);line-height:1.6;}
+
+    @media(max-width:900px){
+      .features-grid{grid-template-columns:1fr 1fr;}
+      .about-grid{grid-template-columns:1fr;}
+      .about-img-box{display:none;}
+      .steps-grid{grid-template-columns:1fr 1fr;}
+      .steps-grid::before{display:none;}
+    }
+    @media(max-width:580px){
+      .features-grid{grid-template-columns:1fr;}
+      .dash-hero{padding:90px 20px 60px;}
+      .features-section,.about-section,.how-section{padding:50px 20px;}
+    }
+  </style>
+  <!-- ══ Google Translate Widget ══ -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        autoDisplay: false
+    }, 'google_translate_element');
+}
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<!-- ══════════════════════════════ -->
+</head>
+<body>
+  <div id="google_translate_element" style="display:none;"></div>
+  <div class="leaves-container"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-icon">🌾</div>
+      <span>Smart Agro Assistant</span>
+    </div>
+    <div class="header-right">
+      <button class="voice-btn" title="Voice Assistant">🎙️</button>
+      <div class="lang-badge" onclick="window.location.href='/'">
+        🌐 <span id="selected-lang-display">English</span>
+      </div>
+      <a href="/logout" class="btn btn-glass" style="padding:8px 16px;font-size:.82rem;">
+        Logout →
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="dash-hero">
+    <div class="hero-inner">
+      <p class="hero-greeting animate-slide-right">Good day, Farmer! 👋</p>
+      <h1 class="hero-title animate-fade-up delay-1">
+        Your <span>Smart Farming</span><br>Assistant is Ready
+      </h1>
+      <p class="hero-sub animate-fade-up delay-2">
+        Detect plant diseases instantly, get personalised crop recommendations, and farm smarter — all in your own language.
+      </p>
+      <div class="hero-stats animate-fade-up delay-3">
+        <div class="hero-stat">🌿 <strong id="disease-count">{{ stats.diseases or 0 }}</strong> Diseases Detected</div>
+        <div class="hero-stat">🌾 <strong id="crop-count">{{ stats.crops or 0 }}</strong> Crop Queries</div>
+        <div class="hero-stat">📊 <strong id="report-count">{{ stats.reports or 0 }}</strong> Reports Saved</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section">
+    <div class="container">
+      <div class="features-header animate-fade-up">
+        <h2 class="section-title">What do you want to do <span>today?</span></h2>
+        <p class="section-subtitle">Choose a module to get started. Our AI analyses your inputs and gives you instant, actionable results.</p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Disease Detection -->
+        <a href="/disease" class="card-link animate-fade-up delay-1">
+          <div class="feature-card card-disease">
+            <div class="card-icon">🌿</div>
+            <h3 class="card-title">Plant Disease Detection</h3>
+            <p class="card-desc">Upload or capture a leaf photo. Our model identifies the disease and suggests organic and chemical treatments.</p>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <!-- Crop Recommendation -->
+        <a href="/crop" class="card-link animate-fade-up delay-2">
+          <div class="feature-card card-crop">
+            <div class="card-icon">🌾</div>
+            <h3 class="card-title">Crop Recommendation</h3>
+            <p class="card-desc">Enter a crop name and get full growing details — soil type, water needs, climate, sunlight, and more.</p>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <!-- Reports -->
+        <a href="/reports" class="card-link animate-fade-up delay-3">
+          <div class="feature-card card-reports">
+            <div class="card-icon">📊</div>
+            <h3 class="card-title">My Saved Reports</h3>
+            <p class="card-desc">View your history of disease detections and crop queries. Download or review past AI recommendations.</p>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Services -->
+  <section class="about-section">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-img-box">🌻</div>
+        <div class="about-content animate-slide-left">
+          <h2>AI Agriculture at Your Fingertips</h2>
+          <p>Smart Agro combines cutting-edge CNN image recognition, dataset-driven crop intelligence, and local AI language models — all accessible through voice in your own language.</p>
+          <div class="about-features">
+            <div class="about-feat">
+              <div class="about-feat-icon">🤖</div>
+              <div class="about-feat-text">
+                <h4>CNN Disease Detection</h4>
+                <p>Convolutional neural network trained on lakhs of plant disease images</p>
+              </div>
+            </div>
+            <div class="about-feat">
+              <div class="about-feat-icon">🗣️</div>
+              <div class="about-feat-text">
+                <h4>150+ Global Languages</h4>
+                <p>Full voice and text support in Tamil, Hindi, Telugu, Kannada and more</p>
+              </div>
+            </div>
+            <div class="about-feat">
+              <div class="about-feat-icon">🧠</div>
+              <div class="about-feat-text">
+                <h4>Local AI Model (LLaMA)</h4>
+                <p>Offline AI generates intelligent treatment advice — no internet needed</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how-section">
+    <div class="container">
+      <h2 class="section-title text-center">How It <span>Works</span></h2>
+      <div class="steps-grid">
+        <div class="step-card animate-scale-in delay-1">
+          <div class="step-num">1</div>
+          <h4>Choose Language</h4>
+          <p>Select from the global languages on the home screen</p>
+        </div>
+        <div class="step-card animate-scale-in delay-2">
+          <div class="step-num">2</div>
+          <h4>Pick a Module</h4>
+          <p>Choose disease detection or crop recommendation from the dashboard</p>
+        </div>
+        <div class="step-card animate-scale-in delay-3">
+          <div class="step-num">3</div>
+          <h4>AI Analyses</h4>
+          <p>CNN model & dataset engine processes your input in seconds</p>
+        </div>
+        <div class="step-card animate-scale-in delay-4">
+          <div class="step-num">4</div>
+          <h4>Get Results</h4>
+          <p>Receive detailed advice in your language, with voice readout</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>🌾 Smart Agro Assistant</h3>
+        <p>AI-powered multilingual agriculture assistant combining CNN disease detection, crop recommendation, and local LLM for intelligent farming support.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Features</h4>
+        <ul>
+          <li><a href="/disease">Disease Detection</a></li>
+          <li><a href="/crop">Crop Recommendation</a></li>
+          <li><a href="/reports">My Reports</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Languages</h4>
+        <ul>
+          <li><a href="#">Tamil · தமிழ்</a></li>
+          <li><a href="#">Hindi · हिंदी</a></li>
+          <li><a href="#">Telugu · తెలుగు</a></li>
+          <li><a href="#">+ 9 more</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:support@smartagro.in">📧 support@smartagro.in</a></li>
+          <li><a href="#">📞 1800-XXX-XXXX</a></li>
+          <li><a href="#">🌐 smartagro.in</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Smart Agro Assistant · Built for Farmers </p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initLeaves();
+      initVoiceBtn();
+      initLangDisplay();
+      // Animate stats
+      document.querySelectorAll('.hero-stat strong').forEach(el => {
+        const val = parseInt(el.textContent) || 0;
+        if (val > 0) AgroApp.animateCount(el, val);
+      });
+    });
+  </script>
+</body>
+</html>

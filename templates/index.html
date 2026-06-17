@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Agro Assistant — Choose Language</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    /* ── HOME PAGE STYLES ── */
+    body { margin: 0; overflow-x: hidden; }
+
+    /* Animated gradient background */
+    .home-bg {
+      min-height: 100vh;
+      background: linear-gradient(145deg, #0d2918 0%, #1a3d2b 30%, #2d6a4f 65%, #1e5c3a 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Grain overlay */
+    .home-bg::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 1;
+    }
+
+    /* Top header bar */
+    .home-topbar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 40px;
+    }
+    .home-topbar .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: white;
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .home-topbar .logo .logo-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--green-light), var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .home-topbar .top-hint {
+      color: rgba(255,255,255,.6);
+      font-size: .85rem;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* Hero section */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 20px 60px;
+      position: relative;
+      z-index: 5;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 16px;
+      background: rgba(82,183,136,.2);
+      border: 1px solid rgba(82,183,136,.4);
+      border-radius: var(--r-pill);
+      color: var(--green-pale);
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: fade-up .5s var(--ease) both;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 900;
+      color: white;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      animation: fade-up .6s var(--ease) .1s both;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--green-pale), var(--gold-bright));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      color: rgba(255,255,255,.65);
+      font-size: 1.05rem;
+      margin-bottom: 48px;
+      animation: fade-up .6s var(--ease) .2s both;
+    }
+
+    /* Language selection label */
+    .lang-label {
+      color: rgba(255,255,255,.5);
+      font-size: .82rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      animation: fade-up .6s var(--ease) .3s both;
+    }
+
+    /* Language grid */
+    .lang-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      max-width: 760px;
+      width: 100%;
+      animation: fade-up .6s var(--ease) .4s both;
+    }
+    .lang-btn {
+      background: rgba(255,255,255,.08);
+      border: 1.5px solid rgba(255,255,255,.15);
+      border-radius: var(--r-md);
+      padding: 16px 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(6px);
+      color: white;
+    }
+    .lang-btn:hover {
+      background: rgba(82,183,136,.25);
+      border-color: rgba(82,183,136,.6);
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 8px 24px rgba(82,183,136,.25);
+    }
+    .lang-btn.selected {
+      background: rgba(82,183,136,.35);
+      border-color: var(--green-light);
+      box-shadow: 0 0 0 3px rgba(82,183,136,.3);
+    }
+    .lang-btn .lang-native {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .lang-btn .lang-english {
+      font-size: .72rem;
+      opacity: .6;
+      font-weight: 600;
+    }
+
+    /* CTA */
+    .home-cta {
+      margin-top: 36px;
+      animation: fade-up .6s var(--ease) .5s both;
+    }
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 40px;
+      background: linear-gradient(135deg, var(--green-light), #3a9e6d);
+      color: white;
+      border-radius: var(--r-pill);
+      font-size: 1.05rem;
+      font-weight: 800;
+      box-shadow: 0 8px 28px rgba(82,183,136,.45);
+      transition: var(--transition);
+      border: none;
+      cursor: pointer;
+    }
+    .btn-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 36px rgba(82,183,136,.55);
+    }
+    .btn-cta .arrow {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+      transition: var(--transition);
+    }
+    .btn-cta:hover .arrow { transform: translateX(4px); }
+
+    /* Bottom decorative crop icons */
+    .crop-icons-row {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px;
+      z-index: 5;
+      opacity: .25;
+      font-size: 1.5rem;
+      filter: blur(0.5px);
+    }
+
+    /* SVG Field Lines - decorative */
+    .field-lines {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    @media(max-width: 640px) {
+      .lang-grid { grid-template-columns: repeat(3, 1fr); }
+      .home-topbar { padding: 18px 20px; }
+      .home-topbar .logo span { display: none; }
+    }
+    @media(max-width: 420px) {
+      .lang-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating leaves -->
+  <div class="leaves-container" id="leaves"></div>
+
+  <div class="home-bg">
+    <!-- Top bar -->
+    <div class="home-topbar">
+      <div class="logo">
+        <div class="logo-icon">🌾</div>
+        <span>Smart Agro Assistant</span>
+      </div>
+      <div class="top-hint">🌍 Select your language to begin</div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-badge">🤖 AI-Powered Agriculture</div>
+      <h1>Grow Smarter<br>with <span>Smart Agro</span></h1>
+      <p class="hero-sub">Detect plant diseases, get crop recommendations & farm with confidence</p>
+
+      <p class="lang-label">🌐 Choose Your Language · உங்கள் மொழியை தேர்ந்தெடுக்கவும் . अपनी भाषा चुनें </p>
+
+      <div class="lang-grid" id="lang-grid">
+        {% for lang in languages %}
+
+<button
+    class="lang-btn"
+    data-code="{{ lang.code }}">
+
+    <span class="lang-native">
+        {{ lang.native }}
+    </span>
+
+    <span class="lang-english">
+        {{ lang.name }}
+    </span>
+
+</button>
+
+{% endfor %}
+
+      </div>
+
+      <div class="home-cta">
+        <button class="btn-cta" onclick="proceedToLogin()">
+          Get Started
+          <span class="arrow">→</span>
+        </button>
+        <p style="color:rgba(255,255,255,.4);font-size:.8rem;margin-top:12px">
+          Already have an account? <a href="/login" style="color:var(--green-pale);font-weight:700">Log in</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Decorative field lines SVG -->
+    <div class="field-lines">
+      <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 80 C360 20, 720 120, 1440 40 L1440 120 L0 120 Z" fill="rgba(255,255,255,0.03)"/>
+        <path d="M0 100 C480 40, 960 100, 1440 60 L1440 120 L0 120 Z" fill="rgba(255,255,255,0.04)"/>
+      </svg>
+    </div>
+
+    <!-- Decorative crop icons -->
+    <div class="crop-icons-row">
+      🌾🌿🍃🌱🌻🌽🍅🥦🌿🌾🍀🌿🌾🌱
+    </div>
+  </div>
+
+  <script>
+  const ALL_LANGUAGES = {{ languages|tojson }};
+  </script>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    // Render language buttons
+    const grid = document.getElementById('lang-grid');
+    let selectedLang = localStorage.getItem('agro_lang') || "";
+
+
+      
+      document
+      .querySelectorAll(".lang-btn")
+      .forEach(btn => {
+
+    if(btn.dataset.code === selectedLang){
+        btn.classList.add("selected");
+    }
+
+    btn.addEventListener("click", function(){
+
+        document
+        .querySelectorAll(".lang-btn")
+        .forEach(b => b.classList.remove("selected"));
+
+        this.classList.add("selected");
+
+        selectedLang = this.dataset.code;
+
+        localStorage.setItem(
+            "agro_lang",
+            selectedLang
+        );
+
+        AgroApp.showToast(
+            "Language Selected"
+        );
+
+    });
+
+});
+
+async function proceedToLogin() {
+
+    if(!selectedLang){
+
+        AgroApp.showToast(
+            "Please select a language"
+        );
+
+        return;
+    }
+
+     // 1. Save to localStorage
+      localStorage.setItem('agro_lang', selectedLang);
+ 
+      // 2. Set the googtrans cookie NOW, before navigating.
+      //    The next page will auto-translate because the cookie is already there.
+      AgroApp.setGTranslateCookie(selectedLang);
+ 
+      // 3. Tell Flask session about the language (for backend translation)
+      await fetch('/set-language', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: selectedLang })
+      });
+ 
+      // 4. Navigate
+      window.location.href = '/register';
+    }
+
+    // Leaves
+    initLeaves && initLeaves();
+  </script>
+</body>
+</html>

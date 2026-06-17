@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+
+    <script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement(
+        {
+            pageLanguage: 'en',
+            autoDisplay: false
+        },
+        'google_translate_element'
+        );
+    }
+    </script>
+
+    <script
+    src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit">
+    </script>
+
+</head>
+
+<body>
+
+<div id="google_translate_element" style="display:none;"></div>
+
+{% block content %}
+{% endblock %}
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+<script>
+window.onload = function(){
+
+    let lang = "{{ selected_lang }}";
+
+    setTimeout(function(){
+
+        let combo = document.querySelector(".goog-te-combo");
+
+        if(combo){
+
+            combo.value = lang;
+
+            combo.dispatchEvent(new Event("change"));
+
+        }
+
+    }, 3000);
+
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crop Recommendation — Smart Agro</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    body{background:var(--cream)}
+    .page-main{padding-top:70px}
+
+    /* ── Hero ── */
+    .crop-hero{
+      background:linear-gradient(135deg,#1a3d2b,#2d6a4f,#3a9e6d);
+      padding:52px 40px 48px;position:relative;overflow:hidden;
+    }
+    .crop-hero::after{content:'🌾';position:absolute;right:60px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.08;}
+    .crop-hero .inner{max-width:1100px;margin:0 auto;}
+    .crop-hero h1{font-family:var(--font-display);font-size:2.2rem;color:white;margin-bottom:8px;}
+    .crop-hero p{color:rgba(255,255,255,.6);font-size:.92rem;line-height:1.7;max-width:500px;}
+
+    /* ── Search box ── */
+    .search-section{max-width:1100px;margin:0 auto;padding:50px 40px 20px;}
+    .search-card{
+      background:white;border-radius:var(--r-xl);padding:44px 40px;
+      box-shadow:var(--shadow-mid);position:relative;overflow:hidden;
+    }
+    .search-card::before{
+      content:'🌱';position:absolute;top:-10px;right:30px;
+      font-size:6rem;opacity:.05;transform:rotate(15deg);
+    }
+    .search-card h2{font-family:var(--font-display);font-size:1.6rem;color:var(--green-deep);margin-bottom:8px;}
+    .search-card p{font-size:.88rem;color:var(--text-light);margin-bottom:28px;}
+    .search-row{display:flex;gap:12px;align-items:flex-end;}
+    .search-row .form-group{flex:1;}
+    .search-row .btn{padding:14px 30px;flex-shrink:0;}
+
+    /* Suggestions chips */
+    .suggestions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+    .sugg-chip{
+      padding:6px 16px;border-radius:var(--r-pill);
+      background:var(--green-ultra);color:var(--green-mid);
+      font-size:.82rem;font-weight:700;cursor:pointer;transition:var(--transition);border:1.5px solid transparent;
+    }
+    .sugg-chip:hover{background:var(--green-pale);border-color:var(--green-light);}
+
+    /* ── Loading ── */
+    .crop-loading{
+      text-align:center;padding:60px 20px;display:none;
+    }
+
+    /* ── Results ── */
+    .results-section{max-width:1100px;margin:0 auto;padding:10px 40px 60px;display:none;}
+    .results-section.show{display:block;animation:fade-up .5s var(--ease);}
+    .results-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:28px;}
+    .results-header h2{font-family:var(--font-display);font-size:1.6rem;color:var(--green-deep);}
+    .results-actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+    /* Crop overview card */
+    .crop-overview{
+      background:linear-gradient(135deg,var(--green-mid),var(--green-deep));
+      border-radius:var(--r-xl);padding:36px 40px;color:white;margin-bottom:28px;
+      display:flex;align-items:center;gap:36px;flex-wrap:wrap;
+    }
+    .crop-icon-big{
+      font-size:5rem;width:110px;height:110px;
+      background:rgba(255,255,255,.12);border-radius:var(--r-xl);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .crop-overview h2{font-family:var(--font-display);font-size:2rem;margin-bottom:6px;}
+    .crop-overview .crop-scientific{font-size:.88rem;opacity:.6;margin-bottom:16px;font-style:italic;}
+    .crop-tags{display:flex;gap:8px;flex-wrap:wrap;}
+    .crop-tag{
+      padding:5px 14px;border-radius:var(--r-pill);
+      background:rgba(255,255,255,.15);font-size:.78rem;font-weight:700;
+    }
+
+    /* Details grid */
+    .details-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:28px;}
+    .detail-card{
+      background:white;border-radius:var(--r-lg);padding:24px;
+      box-shadow:var(--shadow-soft);border-top:4px solid transparent;
+      transition:var(--transition);
+    }
+    .detail-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-mid);}
+    .detail-card.water{border-color:#60a5fa}
+    .detail-card.soil {border-color:#c49a6c}
+    .detail-card.sun  {border-color:var(--gold)}
+    .detail-card.climate{border-color:var(--green-light)}
+    .detail-card.harvest{border-color:var(--amber)}
+    .detail-card.category{border-color:#a78bfa}
+    .detail-icon{font-size:1.8rem;margin-bottom:10px;}
+    .detail-label{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text-light);margin-bottom:6px;}
+    .detail-value{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--green-deep);}
+    .detail-sub{font-size:.8rem;color:var(--text-light);margin-top:4px;line-height:1.5;}
+
+    /* Growing steps */
+    .growing-card{background:white;border-radius:var(--r-lg);padding:32px;box-shadow:var(--shadow-soft);margin-bottom:24px;}
+    .growing-card h3{font-family:var(--font-display);font-size:1.15rem;color:var(--green-deep);margin-bottom:20px;}
+    .growing-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+    .growing-step{text-align:center;padding:20px 12px;background:var(--green-ultra);border-radius:var(--r-md);}
+    .growing-step .gs-num{width:32px;height:32px;border-radius:50%;background:var(--green-mid);color:white;font-weight:700;font-size:.88rem;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+    .growing-step h4{font-size:.82rem;font-weight:700;color:var(--green-deep);margin-bottom:5px;}
+    .growing-step p{font-size:.75rem;color:var(--text-light);}
+
+    /* English + Language result */
+    .dual-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    .result-lang-card{background:white;border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow-soft);}
+    .result-lang-card.en-card{border-top:4px solid var(--green-light);}
+    .result-lang-card.native-card{
+      background:linear-gradient(135deg,var(--green-mid),var(--green-deep));
+      color:white;border-top:none;
+    }
+    .result-lang-card h4{font-weight:800;font-size:.88rem;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+    .result-lang-card.native-card h4{opacity:.8;}
+    .result-lang-card p{font-size:.88rem;line-height:1.8;}
+    .result-lang-card.native-card p{font-size:.95rem;}
+
+    @media(max-width:900px){
+      .details-grid{grid-template-columns:1fr 1fr;}
+      .growing-steps{grid-template-columns:1fr 1fr;}
+      .dual-result-grid{grid-template-columns:1fr;}
+    }
+    @media(max-width:640px){
+      .search-row{flex-direction:column;}
+      .search-section,.results-section{padding:30px 20px;}
+      .crop-overview{flex-direction:column;text-align:center;}
+      .details-grid{grid-template-columns:1fr;}
+    }
+  </style>
+  <!-- ══ Google Translate Widget ══ -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        autoDisplay: false
+    }, 'google_translate_element');
+}
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<!-- ══════════════════════════════ -->
+</head>
+<body>
+  <div id="google_translate_element" style="display:none;"></div>
+  <div class="leaves-container"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-icon">🌾</div>
+      <span>Smart Agro Assistant</span>
+    </div>
+    <div class="header-right">
+      <button class="voice-btn" title="Voice Assistant">🎙️</button>
+      <div class="lang-badge" onclick="window.location.href='/'">🌐 <span id="selected-lang-display">English</span></div>
+      <a href="/dashboard" class="btn btn-glass" style="padding:8px 16px;font-size:.82rem;">← Dashboard</a>
+    </div>
+  </header>
+
+  <main class="page-main">
+    <!-- Hero -->
+    <div class="crop-hero">
+      <div class="inner animate-slide-right">
+        <div style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.5);font-size:.85rem;margin-bottom:12px;cursor:pointer;" onclick="window.location.href='/dashboard'">← Back to Dashboard</div>
+        <h1>🌾 Crop Recommendation</h1>
+        <p>Enter any crop name and get complete growing details — soil type, water needs, climate, sunlight, harvest time, and AI-powered advice.</p>
+      </div>
+    </div>
+
+    <!-- Search section -->
+    <div class="search-section">
+      <div class="search-card animate-fade-up">
+        <h2>What crop do you want to grow?</h2>
+        <p>Type the crop name below and our dataset engine will fetch everything you need to know.</p>
+        <div class="search-row">
+          <div class="form-group">
+            <label>🔍 Crop Name</label>
+            <input type="text" id="crop-input" class="form-control" placeholder="e.g. Tomato, Rice, Cotton, Sunflower…"
+                   onkeydown="if(event.key==='Enter') getCropInfo()" />
+          </div>
+          <button class="btn btn-primary" onclick="getCropInfo()">🌱 Get Details</button>
+          <button class="btn btn-read" onclick="startVoiceCrop()" title="Speak crop name">🎤</button>
+        </div>
+        <div class="suggestions">
+          <span style="font-size:.8rem;color:var(--text-light);align-self:center;">Try: </span>
+          <span class="sugg-chip" onclick="quickSearch('Tomato')">🍅 Tomato</span>
+          <span class="sugg-chip" onclick="quickSearch('Rice')">🌾 Rice</span>
+          <span class="sugg-chip" onclick="quickSearch('Cotton')">🌿 Cotton</span>
+          <span class="sugg-chip" onclick="quickSearch('Sugarcane')">🎋 Sugarcane</span>
+          <span class="sugg-chip" onclick="quickSearch('Groundnut')">🥜 Groundnut</span>
+          <span class="sugg-chip" onclick="quickSearch('Wheat')">🌾 Wheat</span>
+          <span class="sugg-chip" onclick="quickSearch('Maize')">🌽 Maize</span>
+          <span class="sugg-chip" onclick="quickSearch('Sunflower')">🌻 Sunflower</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="crop-loading" id="crop-loading">
+      <div class="spinner"></div>
+      <p style="margin-top:16px;color:var(--text-light);">🌱 Fetching crop details from dataset…</p>
+    </div>
+
+    <!-- Results -->
+    <div class="results-section" id="results-section">
+      <div class="results-header">
+        <h2 id="result-heading">Crop Details</h2>
+        <div class="results-actions">
+          <button class="btn btn-read" onclick="readCropResults()">🔊 Read Aloud</button>
+          <button class="btn btn-primary" onclick="saveCropReport()">💾 Save Report</button>
+          <button class="btn btn-outline" onclick="resetCrop()">🔄 Search Again</button>
+        </div>
+      </div>
+
+      <!-- Overview -->
+      <div class="crop-overview" id="crop-overview-card">
+        <div class="crop-icon-big" id="crop-icon">🌱</div>
+        <div>
+          <h2 id="crop-title">—</h2>
+          <p class="crop-scientific" id="crop-scientific">—</p>
+          <div class="crop-tags" id="crop-tags"></div>
+        </div>
+      </div>
+
+      <!-- Details grid -->
+      <div class="details-grid">
+        <div class="detail-card water">
+          <div class="detail-icon">💧</div>
+          <div class="detail-label">Water Requirement</div>
+          <div class="detail-value" id="d-water">—</div>
+          <div class="detail-sub" id="d-water-sub"></div>
+        </div>
+        <div class="detail-card soil">
+          <div class="detail-icon">🌍</div>
+          <div class="detail-label">Best Soil Type</div>
+          <div class="detail-value" id="d-soil">—</div>
+          <div class="detail-sub" id="d-soil-sub"></div>
+        </div>
+        <div class="detail-card sun">
+          <div class="detail-icon">☀️</div>
+          <div class="detail-label">Sunlight Needed</div>
+          <div class="detail-value" id="d-sun">—</div>
+          <div class="detail-sub" id="d-sun-sub"></div>
+        </div>
+        <div class="detail-card climate">
+          <div class="detail-icon">🌡️</div>
+          <div class="detail-label">Best Climate</div>
+          <div class="detail-value" id="d-climate">—</div>
+          <div class="detail-sub" id="d-climate-sub"></div>
+        </div>
+        <div class="detail-card harvest">
+          <div class="detail-icon">📅</div>
+          <div class="detail-label">Harvest Time</div>
+          <div class="detail-value" id="d-harvest">—</div>
+          <div class="detail-sub" id="d-harvest-sub"></div>
+        </div>
+        <div class="detail-card category">
+          <div class="detail-icon">🏷️</div>
+          <div class="detail-label">Crop Category</div>
+          <div class="detail-value" id="d-category">—</div>
+          <div class="detail-sub" id="d-category-sub"></div>
+        </div>
+      </div>
+
+      <!-- Growing steps -->
+      <div class="growing-card">
+        <h3>🌱 How to Grow — Step by Step</h3>
+        <div class="growing-steps" id="growing-steps">
+          <div class="growing-step"><div class="gs-num">1</div><h4>Prepare Soil</h4><p>Loading…</p></div>
+          <div class="growing-step"><div class="gs-num">2</div><h4>Sow Seeds</h4><p>Loading…</p></div>
+          <div class="growing-step"><div class="gs-num">3</div><h4>Irrigation</h4><p>Loading…</p></div>
+          <div class="growing-step"><div class="gs-num">4</div><h4>Harvest</h4><p>Loading…</p></div>
+        </div>
+      </div>
+
+      <!-- Dual language result -->
+      <div class="dual-result-grid">
+        <div class="result-lang-card en-card">
+          <h4>🇬🇧 Result in English</h4>
+          <p id="english-result"></p>
+        </div>
+        <div class="result-lang-card native-card">
+          <h4 id="native-lang-title">🌐 Result in Your Language</h4>
+          <p id="native-result">—</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initLeaves(); initVoiceBtn(); initLangDisplay(); initToast();
+    });
+
+    function quickSearch(name) {
+      document.getElementById('crop-input').value = name;
+      getCropInfo();
+    }
+
+    function startVoiceCrop() {
+      AgroApp.startListening((text) => {
+        text = text.replace(/[.,!?;:]/g, '').trim();
+        document.getElementById('crop-input').value = text;
+        getCropInfo();
+      });
+    }
+
+    async function getCropInfo() {
+      const crop = document.getElementById('crop-input').value.trim();
+      if (!crop) { AgroApp.showToast('⚠️ Please enter a crop name'); return; }
+
+      document.getElementById('results-section').classList.remove('show');
+      document.getElementById('crop-loading').style.display = 'block';
+
+      try {
+        // ── CONNECT YOUR FLASK /api/crop ENDPOINT HERE ──
+        const res = await fetch('/api/crop', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ crop_name: crop, lang: AgroState.lang })
+        });
+        const data = await res.json();
+        displayCropResults(data);
+      } catch(err) {
+        displayCropResults(getDemoCrop(crop));
+      }
+      document.getElementById('crop-loading').style.display = 'none';
+    }
+
+    function displayCropResults(data) {
+      document.getElementById('result-heading').textContent = `🌾 ${data.name || '?'} — Growing Guide`;
+      document.getElementById('crop-title').textContent = data.name || '?';
+      document.getElementById('crop-scientific').textContent = data.scientific_name || '';
+      document.getElementById('crop-icon').textContent = data.icon || '🌱';
+
+      const tags = document.getElementById('crop-tags');
+      tags.innerHTML = (data.tags || []).map(t => `<span class="crop-tag">${t}</span>`).join('');
+
+      document.getElementById('d-water').textContent = data.water || '—';
+      document.getElementById('d-water-sub').textContent = data.water_detail || '';
+      document.getElementById('d-soil').textContent = data.soil || '—';
+      document.getElementById('d-soil-sub').textContent = data.soil_detail || '';
+      document.getElementById('d-sun').textContent = data.sunlight || '—';
+      document.getElementById('d-sun-sub').textContent = data.sun_detail || '';
+      document.getElementById('d-climate').textContent = data.climate || '—';
+      document.getElementById('d-climate-sub').textContent = data.climate_detail || '';
+      document.getElementById('d-harvest').textContent = data.harvest_time || '—';
+      document.getElementById('d-harvest-sub').textContent = data.harvest_detail || '';
+      document.getElementById('d-category').textContent = data.category || '—';
+      document.getElementById('d-category-sub').textContent = data.category_detail || '';
+
+      const steps = data.steps || [];
+      document.getElementById('growing-steps').innerHTML = steps.map((s,i) => `
+        <div class="growing-step">
+          <div class="gs-num">${i+1}</div>
+          <h4>${s.title}</h4>
+          <p>${s.desc}</p>
+        </div>`).join('');
+
+      document.getElementById('english-result').textContent = data.english_summary || '';
+
+      const langInfo = AgroState.langInfo;
+      document.getElementById('native-lang-title').textContent = `🌐 ${langInfo.native} (${langInfo.name})`;
+      document.getElementById('native-result').textContent = data.translated_result || data.english_summary || '—';
+
+      document.getElementById('results-section').classList.add('show');
+      document.getElementById('results-section').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    function readCropResults() {
+      const title = document.getElementById('crop-title').textContent;
+      const eng = document.getElementById('english-result').textContent;
+      const nat = document.getElementById('native-result').textContent;
+      AgroApp.readAloudText(`${title}. ${eng}. ${nat}`);
+    }
+
+    function saveCropReport() {
+      fetch('/api/save-report', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ type:'crop', crop_name: document.getElementById('crop-title').textContent,
+          result: document.getElementById('english-result').textContent })
+      }).then(() => AgroApp.showToast('✅ Crop report saved!'))
+        .catch(() => AgroApp.showToast('✅ Report saved!'));
+    }
+
+    function resetCrop() {
+      document.getElementById('crop-input').value = '';
+      document.getElementById('results-section').classList.remove('show');
+      window.scrollTo({ top:0, behavior:'smooth' });
+    }
+
+    function getDemoCrop(name) {
+      return {
+        name: name, icon:'🌱', scientific_name:'(Scientific name from your dataset)',
+        tags:['Food Crop','Annual','High Yield'],
+        water:'Medium – High', water_detail:'500–800 mm per season, regular irrigation needed',
+        soil:'Loamy / Sandy-Loam', soil_detail:'Well-drained, pH 6.0–7.5, rich in organic matter',
+        sunlight:'Full Sun (6–8 hrs)', sun_detail:'Best yield in direct sunlight conditions',
+        climate:'Warm Temperate', climate_detail:'Optimal temp 18–27°C; avoid frost',
+        harvest_time:'60–90 days', harvest_detail:'After planting depending on variety',
+        category:'Food Crop', category_detail:'Widely grown across India',
+        steps:[
+          {title:'Soil Prep', desc:'Plough 2–3 times. Add compost 2 weeks before sowing.'},
+          {title:'Sowing', desc:'Sow seeds at 2–3 cm depth, 30 cm row spacing.'},
+          {title:'Irrigation', desc:'Water every 5–7 days; increase during flowering stage.'},
+          {title:'Harvest', desc:'Harvest when fully mature. Store in cool dry place.'}
+        ],
+        english_summary: `${name} requires well-drained loamy soil with medium to high water. Plant in full sunlight and warm temperatures. Harvest in 60–90 days. Apply NPK fertiliser at sowing and topdress at flowering stage.`,
+        translated_result: '(Translated result will appear here once your Flask + googletrans backend is connected)'
+      };
+    }
+  </script>
+</body>
+</html>

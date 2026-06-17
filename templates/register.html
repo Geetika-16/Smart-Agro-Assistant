@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register — Smart Agro Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    body { margin:0; min-height:100vh; display:flex; flex-direction:column; }
+    .auth-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    /* Left panel */
+    .auth-left {
+      background: linear-gradient(145deg,#0d2918,#2d6a4f);
+      display: flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding: 60px 50px;
+      position: relative; overflow: hidden;
+    }
+    .auth-left::before {
+      content:''; position:absolute; inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2352b788' fill-opacity='.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .auth-left .brand {
+      display:flex; align-items:center; gap:12px;
+      color:white; font-family:var(--font-display);
+      font-size:1.6rem; font-weight:700; margin-bottom:40px;
+    }
+    .auth-left .brand .logo-icon {
+      width:50px;height:50px;border-radius:14px;
+      background:linear-gradient(135deg,var(--green-light),var(--gold));
+      display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+    }
+    .auth-illustration { font-size:5rem; margin-bottom:28px; animation:wave 3s ease-in-out infinite; }
+    .auth-left h2 { font-family:var(--font-display);font-size:1.8rem;color:white;margin-bottom:14px;text-align:center; }
+    .auth-left p { color:rgba(255,255,255,.6);font-size:.92rem;text-align:center;line-height:1.8;max-width:280px; }
+    .auth-features { margin-top:32px; width:100%; }
+    .auth-feature-item {
+      display:flex;align-items:center;gap:12px;
+      padding:12px 18px; border-radius:var(--r-md);
+      background:rgba(255,255,255,.07);
+      color:rgba(255,255,255,.8);
+      font-size:.88rem;margin-bottom:8px;
+    }
+    /* Right panel */
+    .auth-right {
+      background:var(--cream);
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      padding:60px 50px;
+    }
+    .auth-form-box { width:100%; max-width:420px; }
+    .auth-form-box h1 {
+      font-family:var(--font-display);font-size:2rem;font-weight:700;
+      color:var(--green-deep);margin-bottom:6px;
+    }
+    .auth-form-box .subtitle { color:var(--text-light);font-size:.92rem;margin-bottom:36px; }
+    .form-stack { display:flex;flex-direction:column;gap:18px; }
+    .phone-field { display:flex;gap:8px; }
+    .phone-prefix {
+      padding:14px 14px;border:2px solid var(--green-pale);border-radius:var(--r-md);
+      background:white;color:var(--text-mid);font-weight:700;font-size:1rem;
+      min-width:68px;display:flex;align-items:center;justify-content:center;
+    }
+    .auth-actions { display:flex;flex-direction:column;gap:10px;margin-top:8px; }
+    .auth-divider { text-align:center;color:var(--text-light);font-size:.85rem;position:relative; }
+    .auth-divider::before,.auth-divider::after {
+      content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--green-ultra);
+    }
+    .auth-divider::before{left:0} .auth-divider::after{right:0}
+    .auth-link { text-align:center;font-size:.88rem;color:var(--text-light); }
+    .auth-link a { color:var(--green-mid);font-weight:700; }
+    .dob-hint { font-size:.78rem;color:var(--text-light);margin-top:4px; }
+    @media(max-width:768px) {
+      .auth-page{grid-template-columns:1fr;}
+      .auth-left{display:none;}
+      .auth-right{padding:40px 24px;}
+    }
+  </style>
+  <!-- ══ Google Translate Widget ══ -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        autoDisplay: false
+    }, 'google_translate_element');
+}
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<!-- ══════════════════════════════ -->
+</head>
+<body>
+  <div id="google_translate_element" style="display:none;"></div>
+  <div class="auth-page">
+    <!-- Left decorative panel -->
+    <div class="auth-left">
+      <div class="leaves-container" id="leaves"></div>
+      <div class="brand" style="position:relative;z-index:2">
+        <div class="logo-icon">🌾</div>
+        Smart Agro
+      </div>
+      <div class="auth-illustration">🌱</div>
+      <h2>Join Our Farming<br>Community</h2>
+      <p>Get AI-powered crop advice and disease detection in your own language</p>
+      <div class="auth-features" style="position:relative;z-index:2;margin-top:28px">
+        <div class="auth-feature-item">🌿 Plant disease detection</div>
+        <div class="auth-feature-item">🌾 Smart crop recommendations</div>
+        <div class="auth-feature-item">🗣️ Voice support in multiple languages</div>
+        <div class="auth-feature-item">📊 Save & view your history</div>
+      </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="auth-right">
+      <div class="auth-form-box animate-fade-up">
+        <h1>Create Account</h1>
+        <p class="subtitle">Fill in your details to get started 🌾</p>
+
+        <form action="/register" method="POST" class="form-stack" id="reg-form">
+          <div class="form-group">
+            <label>👤 Full Name</label>
+            <input type="text" name="name" class="form-control" placeholder="Your name" required autocomplete="name" />
+          </div>
+          <div class="form-group">
+            <label>📱 Phone Number</label>+
+            <div class="phone-field">
+              <input 
+              type="tel"
+              id="phone"
+              name="phone"
+              class="form-control"
+              placeholder="Enter Phone Number"
+              required 
+              >
+            </div>
+          </div>
+          <div class="form-group">
+            <label>🎂 Date of Birth</label>
+            <input type="date" name="dob" class="form-control" required />
+            <p class="dob-hint">Used to personalise your experience</p>
+          </div>
+
+          <div class="auth-actions">
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:15px">
+              🌱 Create My Account
+            </button>
+            <button type="button" class="btn btn-read" style="width:100%;justify-content:center"
+                    onclick="AgroApp.readAloud('reg-form-text')">
+              🔊 Read Aloud
+            </button>
+          </div>
+
+          <div class="auth-link">
+            Already registered? <a href="/login">Login here →</a>
+          </div>
+        </form>
+
+        <p id="reg-form-text" class="hidden">
+          Create your Smart Agro Assistant account. Enter your full name, your 10-digit phone number, and your date of birth. Then click Create My Account to get started.
+        </p>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for cat, msg in messages %}
+                {{ msg }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    initLeaves && initLeaves();
+    // Auto-set max date for DOB (must be >10 years old)
+    const dobInput = document.querySelector('input[name="dob"]');
+    if (dobInput) {
+      const max = new Date();
+      max.setFullYear(max.getFullYear() - 10);
+      dobInput.max = max.toISOString().split('T')[0];
+    }
+  </script>
+
+</body>
+</html>

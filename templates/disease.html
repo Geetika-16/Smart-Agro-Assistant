@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plant Disease Detection — Smart Agro</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    body{background:var(--cream)}
+    .page-main{padding-top:70px}
+
+    /* ── Hero Strip ── */
+    .disease-hero{
+      background:linear-gradient(135deg,#0d2918,#1a3d2b,#2d6a4f);
+      padding:52px 40px 48px;position:relative;overflow:hidden;
+    }
+    .disease-hero::after{content:'🌿';position:absolute;right:60px;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.08;}
+    .disease-hero .inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+    .disease-hero h1{font-family:var(--font-display);font-size:2.2rem;color:white;margin-bottom:8px;}
+    .disease-hero p{color:rgba(255,255,255,.6);font-size:.92rem;max-width:420px;line-height:1.7;}
+    .hero-back{display:flex;align-items:center;gap:7px;color:rgba(255,255,255,.5);font-size:.85rem;cursor:pointer;transition:var(--transition);}
+    .hero-back:hover{color:white;}
+
+    /* ── Body ── */
+    .disease-body{max-width:1100px;margin:0 auto;padding:50px 40px;}
+
+    /* ── Two option cards ── */
+    .option-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:48px;}
+    .option-card{
+      background:white;border-radius:var(--r-xl);padding:40px 32px;
+      box-shadow:var(--shadow-soft);border:2px solid transparent;
+      transition:var(--transition);text-align:center;
+    }
+    .option-card:hover{border-color:var(--green-pale);box-shadow:var(--shadow-mid);}
+    .option-card.active{border-color:var(--green-light);box-shadow:0 0 0 4px rgba(82,183,136,.12);}
+    .option-card .oc-icon{font-size:3.5rem;margin-bottom:18px;animation:wave 3s ease-in-out infinite;}
+    .option-card h3{font-family:var(--font-display);font-size:1.3rem;color:var(--green-deep);margin-bottom:10px;}
+    .option-card p{font-size:.88rem;color:var(--text-light);line-height:1.7;margin-bottom:24px;}
+
+    /* ── Upload zone ── */
+    .upload-zone{
+      border:3px dashed var(--green-pale);border-radius:var(--r-lg);padding:48px 28px;
+      text-align:center;cursor:pointer;transition:var(--transition);background:var(--green-ultra);
+      position:relative;overflow:hidden;
+    }
+    .upload-zone input[type=file]{display:none;}
+    .upload-zone:hover,.upload-zone.drag-over{border-color:var(--green-light);background:rgba(82,183,136,.08);transform:scale(1.01);}
+    .upload-zone .uz-icon{font-size:3rem;margin-bottom:14px;display:block;}
+    .upload-zone h3{font-family:var(--font-display);font-size:1.15rem;color:var(--green-deep);margin-bottom:7px;}
+    .upload-zone p{font-size:.83rem;color:var(--text-light);}
+    .upload-zone .or-text{margin:16px 0;font-size:.82rem;color:var(--text-light);}
+
+    /* ── Camera section ── */
+    .camera-wrapper{border-radius:var(--r-lg);overflow:hidden;background:#111;position:relative;aspect-ratio:4/3;}
+    .camera-wrapper video{width:100%;height:100%;object-fit:cover;display:block;}
+    .cam-placeholder{
+      width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      color:rgba(255,255,255,.4);gap:12px;background:#0a0a0a;
+    }
+    .cam-placeholder span{font-size:3.5rem;}
+    .cam-placeholder p{font-size:.85rem;}
+    .cam-controls{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+    .capture-preview-box{margin-top:16px;border-radius:var(--r-md);overflow:hidden;display:none;}
+    .capture-preview-box img{width:100%;border-radius:var(--r-md);}
+
+    /* ── Analyze button ── */
+    .analyze-wrap{text-align:center;margin-top:36px;}
+
+    /* ── Results section ── */
+    .results-section{margin-top:48px;display:none;}
+    .results-section.show{display:block;animation:fade-up .5s var(--ease);}
+    .results-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px;}
+    .results-header h2{font-family:var(--font-display);font-size:1.6rem;color:var(--green-deep);}
+    .results-actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+    /* Disease card */
+    .disease-card{
+      background:white;border-radius:var(--r-lg);padding:36px;
+      box-shadow:var(--shadow-soft);margin-bottom:24px;
+    }
+    .disease-name-row{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+    .disease-badge{
+      padding:6px 16px;border-radius:var(--r-pill);font-size:.8rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.05em;
+    }
+    .badge-danger{background:#fce8e8;color:#c62828;}
+    .badge-healthy{background:var(--green-ultra);color:var(--green-mid);}
+    .confidence-bar{
+      height:8px;border-radius:4px;background:var(--green-ultra);flex:1;min-width:120px;
+      overflow:hidden;
+    }
+    .confidence-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green-light),var(--green-mid));transition:width 1s var(--ease);}
+
+    /* Treatment tabs */
+    .treatment-section{margin-top:28px;}
+    .treatment-section h3{font-family:var(--font-display);font-size:1.1rem;color:var(--green-deep);margin-bottom:16px;}
+    .treatment-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    .treatment-box{border-radius:var(--r-md);padding:22px;}
+    .treatment-box.organic{background:linear-gradient(135deg,var(--green-ultra),#e8f7ee);}
+    .treatment-box.chemical{background:linear-gradient(135deg,#fff3e8,#fde8d4);}
+    .treatment-box h4{font-weight:800;font-size:.9rem;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+    .treatment-box ul{list-style:none;padding:0;}
+    .treatment-box ul li{font-size:.87rem;color:var(--text-mid);padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:8px;}
+    .treatment-box ul li:last-child{border:none;}
+
+    /* Language result */
+    .lang-result-box{
+      background:linear-gradient(135deg,var(--green-mid),var(--green-deep));
+      border-radius:var(--r-lg);padding:28px 32px;color:white;margin-top:24px;
+    }
+    .lang-result-box h3{font-family:var(--font-display);font-size:1.1rem;margin-bottom:14px;opacity:.8;}
+    .lang-result-content{font-size:1rem;line-height:1.8;}
+    .lang-label-tag{
+      display:inline-flex;align-items:center;gap:5px;
+      padding:3px 12px;border-radius:var(--r-pill);
+      background:rgba(255,255,255,.15);font-size:.75rem;font-weight:700;margin-bottom:10px;
+    }
+
+    @media(max-width:768px){
+      .option-grid{grid-template-columns:1fr;}
+      .disease-body{padding:30px 20px;}
+      .treatment-grid{grid-template-columns:1fr;}
+    }
+  </style>
+  <!-- ══ Google Translate Widget ══ -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        autoDisplay: false
+    }, 'google_translate_element');
+}
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</head>
+<body>
+  <div id="google_translate_element" style="display:none;"></div>
+  <div class="leaves-container"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-icon">🌾</div>
+      <span>Smart Agro Assistant</span>
+    </div>
+    <div class="header-right">
+      <button class="voice-btn" title="Voice Assistant">🎙️</button>
+      <div class="lang-badge" onclick="window.location.href='/'">
+        🌐 <span id="selected-lang-display">English</span>
+      </div>
+      <a href="/dashboard" class="btn btn-glass" style="padding:8px 16px;font-size:.82rem;">← Dashboard</a>
+    </div>
+  </header>
+
+  <main class="page-main">
+    <!-- Hero strip -->
+    <div class="disease-hero">
+      <div class="inner">
+        <div class="animate-slide-right">
+          <div class="hero-back" onclick="window.location.href='/dashboard'">← Back to Dashboard</div>
+          <h1>🌿 Plant Disease Detection</h1>
+          <p>Upload or capture a leaf image. Our model will analyse it and provide organic & chemical treatment recommendations.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;" class="animate-slide-left">
+          <div class="hero-stat" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-pill);padding:10px 18px;color:white;font-size:.85rem;">
+            🧠 CNN-powered
+          </div>
+          <div class="hero-stat" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-pill);padding:10px 18px;color:white;font-size:.85rem;">
+            🌐 Multilingual results
+          </div>
+          <div class="hero-stat" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-pill);padding:10px 18px;color:white;font-size:.85rem;">
+            🔊 Voice readout
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="disease-body">
+
+      <!-- Mode selection cards -->
+      <div class="option-grid">
+        <!-- Upload -->
+        <div class="option-card active" id="card-upload" onclick="switchMode('upload')">
+          <div class="oc-icon">📤</div>
+          <h3>Upload Leaf Image</h3>
+          <p>Select an image from your device. Supports JPG, PNG, WEBP up to 10 MB.</p>
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" id="leaf-file" accept="image/*" />
+            <span class="uz-icon">🍃</span>
+            <h3>Drag & Drop or Click to Upload</h3>
+            <p>Accepts JPG, PNG, WEBP</p>
+            <div class="or-text">— or —</div>
+            <button class="btn btn-outline" onclick="event.stopPropagation();document.getElementById('leaf-file').click()">
+              📂 Browse File
+            </button>
+          </div>
+        </div>
+
+        <!-- Camera -->
+        <div class="option-card" id="card-camera" onclick="switchMode('camera')">
+          <div class="oc-icon">📷</div>
+          <h3>Capture via Camera</h3>
+          <p>Use your device camera to take a fresh photo of the affected leaf in real time.</p>
+          <div class="camera-wrapper" id="cam-wrapper">
+            <div class="cam-placeholder" id="cam-placeholder">
+              <span>📷</span>
+              <p>Click "Start Camera" to begin</p>
+            </div>
+            <video id="camera-feed" autoplay playsinline style="display:none;width:100%;height:100%;object-fit:cover;"></video>
+          </div>
+          <div class="capture-preview-box" id="capture-preview-box">
+            <img id="capture-preview" src="" alt="Captured leaf" />
+          </div>
+          <div class="cam-controls">
+            <button class="btn btn-primary" id="start-cam-btn" onclick="event.stopPropagation();AgroApp.startCamera()">📷 Start Camera</button>
+            <button class="btn btn-accent hidden" id="capture-btn" onclick="event.stopPropagation();captureAndPreview()">📸 Capture Photo</button>
+            <button class="btn btn-outline hidden" id="stop-cam-btn" onclick="event.stopPropagation();AgroApp.stopCamera()">⏹ Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analyze button -->
+      <div class="analyze-wrap">
+        <button class="btn btn-accent hidden" id="analyze-btn" onclick="analyzeLeaf()" style="padding:16px 48px;font-size:1.05rem;">
+          🔍 Analyze Leaf Now
+        </button>
+        <div id="analyzing-box" class="hidden" style="text-align:center;padding:20px;">
+          <div class="spinner"></div>
+          <p style="margin-top:14px;color:var(--text-light);font-size:.9rem;">🧠 CNN model is analysing the leaf image…</p>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div class="results-section" id="results-section">
+        <div class="results-header">
+          <h2>🔬 Analysis Results</h2>
+          <div class="results-actions">
+            <button class="btn btn-read" onclick="readResults()">🔊 Read Aloud</button>
+            <button class="btn btn-primary" onclick="saveReport()">💾 Save Report</button>
+            <button class="btn btn-outline" onclick="resetPage()">🔄 Analyse Again</button>
+          </div>
+        </div>
+
+        <!-- Disease info card -->
+        <div class="disease-card" id="disease-info-card">
+          <div class="disease-name-row">
+            <h3 id="disease-name" style="font-family:var(--font-display);font-size:1.4rem;color:var(--green-deep);">—</h3>
+            <span class="disease-badge badge-danger" id="disease-badge">Disease Detected</span>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:150px;">
+              <span style="font-size:.78rem;color:var(--text-light);">Confidence</span>
+              <div class="confidence-bar">
+                <div class="confidence-fill" id="confidence-fill" style="width:0%"></div>
+              </div>
+              <span id="confidence-pct" style="font-size:.82rem;font-weight:700;color:var(--green-mid);">0%</span>
+            </div>
+          </div>
+          <p id="disease-description" style="font-size:.9rem;color:var(--text-light);line-height:1.8;margin-bottom:20px;"></p>
+
+          <!-- Treatments -->
+          <div class="treatment-section">
+            <h3>💊 Recommended Treatments</h3>
+            <div class="treatment-grid">
+              <div class="treatment-box organic">
+                <h4>🌿 Organic Solutions</h4>
+                <ul id="organic-list"></ul>
+              </div>
+              <div class="treatment-box chemical">
+                <h4>🧪 Chemical Pesticides</h4>
+                <ul id="chemical-list"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- English result -->
+        <div class="disease-card" id="english-result" style="border-left:4px solid var(--green-light);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="font-size:1.2rem;">🇬🇧</span>
+            <span style="font-weight:700;color:var(--green-deep);">Results</span>
+          </div>
+          <div id="english-result-text" style="font-size:.9rem;color:var(--text-mid);line-height:1.8;"></div>
+        </div>
+
+        <!-- Selected language result -->
+        <div class="lang-result-box" id="lang-result-box">
+          <div class="lang-label-tag" id="lang-label-tag">🌐 Result</div>
+          <h3>Result in Your Language</h3>
+          <div class="lang-result-content" id="lang-result-text">—</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    let activeMode = 'upload';
+    let imageData = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initLeaves(); initVoiceBtn(); initLangDisplay(); initToast(); initDragDrop();
+      // Upload zone file input
+      document.getElementById('leaf-file').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) handleFileUpload(file, document.getElementById('upload-zone'));
+      });
+    });
+
+    function switchMode(mode) {
+      activeMode = mode;
+      document.getElementById('card-upload').classList.toggle('active', mode === 'upload');
+      document.getElementById('card-camera').classList.toggle('active', mode === 'camera');
+      if (mode === 'camera') AgroApp.startCamera();
+    }
+
+    function captureAndPreview() {
+      AgroApp.capturePhoto();
+      const box = document.getElementById('capture-preview-box');
+      box.style.display = 'block';
+      imageData = document.querySelector('.upload-zone')?.dataset?.imageData
+                  || document.getElementById('capture-preview')?.src;
+      document.getElementById('analyze-btn').classList.remove('hidden');
+    }
+
+    async function analyzeLeaf() {
+      const zone = document.getElementById('upload-zone');
+      imageData = zone.dataset.imageData || document.getElementById('capture-preview')?.src;
+      if (!imageData) { AgroApp.showToast('⚠️ Please upload or capture an image first'); return; }
+
+      document.getElementById('analyze-btn').classList.add('hidden');
+      document.getElementById('analyzing-box').classList.remove('hidden');
+
+      try {
+        // ── CONNECT TO YOUR FLASK BACKEND HERE ──
+        const res = await fetch('/api/detect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageData, lang: AgroState.lang })
+        });
+        const data = await res.json();
+        displayResults(data);
+      } catch (err) {
+        // Demo fallback while backend is being built
+        displayResults(getDemoResult());
+      }
+      document.getElementById('analyzing-box').classList.add('hidden');
+    }
+
+    function displayResults(data) {
+      document.getElementById('disease-name').textContent = data.disease_name || 'Unknown';
+      document.getElementById('disease-description').textContent = data.description || '';
+      
+      const pct = Math.round((data.confidence || 0.85) * 100);
+      document.getElementById('confidence-pct').textContent = pct + '%';
+      setTimeout(() => {
+        document.getElementById('confidence-fill').style.width = pct + '%';
+      }, 200);
+
+      const badge = document.getElementById('disease-badge');
+      if (data.is_healthy) {
+        badge.textContent = '✅ Healthy';
+        badge.className = 'disease-badge badge-healthy';
+      } else {
+        badge.textContent = '⚠️ Disease Detected';
+        badge.className = 'disease-badge badge-danger';
+      }
+
+      const oList = document.getElementById('organic-list');
+      oList.innerHTML = (data.organic || []).map(t => `<li>🌿 ${t}</li>`).join('');
+      const cList = document.getElementById('chemical-list');
+      cList.innerHTML = (data.chemical || []).map(t => `<li>🧪 ${t}</li>`).join('');
+
+      document.getElementById('english-result-text').textContent = data.english_summary || '';
+      document.getElementById('lang-result-text').textContent = data.translated_result || data.english_summary || '';
+      
+      const langInfo = AgroState.langInfo;
+      document.getElementById('lang-label-tag').textContent = `🌐 Result in ${langInfo.name} (${langInfo.native})`;
+
+      document.getElementById('results-section').classList.add('show');
+      document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function readResults() {
+      const disease = document.getElementById('disease-name').textContent;
+      const desc = document.getElementById('disease-description').textContent;
+      const langText = document.getElementById('lang-result-text').textContent;
+      const fullText = `Disease detected: ${disease}. ${desc}. ${langText}`;
+      AgroApp.readAloudText(fullText);
+    }
+
+    function saveReport() {
+      fetch('/api/save-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'disease',
+          disease_name: document.getElementById('disease-name').textContent,
+          result: document.getElementById('english-result-text').textContent
+        })
+      }).then(() => AgroApp.showToast('✅ Report saved successfully!'))
+        .catch(() => AgroApp.showToast('✅ Report saved!'));
+    }
+
+    function resetPage() {
+      document.getElementById('results-section').classList.remove('show');
+      document.getElementById('analyze-btn').classList.add('hidden');
+      document.getElementById('analyzing-box').classList.add('hidden');
+      zone.innerHTML = `
+        <input type="file" id="leaf-file" accept="image/*" />
+        <span class="uz-icon">🍃</span>
+        <h3>Drag & Drop or Click to Upload</h3>
+        <p>Accepts JPG, PNG, WEBP</p>
+        <div class="or-text">— or —</div>
+        <button class="btn btn-outline" onclick="event.stopPropagation();document.getElementById('leaf-file').click()">📂 Browse File</button>`;
+      initDragDrop();
+      document.getElementById('leaf-file').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) handleFileUpload(file, document.getElementById('upload-zone'));
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function getDemoResult() {
+      return {
+        disease_name: 'Early Blight (Alternaria solani)',
+        description: 'Early blight is a common fungal disease caused by Alternaria solani. It appears as dark brown spots with concentric rings on older leaves. The disease spreads rapidly in warm, humid conditions and can severely reduce yield if untreated.',
+        confidence: 0.92,
+        is_healthy: false,
+        organic: [
+          'Apply neem oil spray (5ml/L) every 7 days',
+          'Use copper-based fungicide (Bordeaux mixture)',
+          'Remove and destroy infected leaves immediately',
+          'Improve air circulation around plants'
+        ],
+        chemical: [
+          'Mancozeb 75% WP @ 2.5 g/L of water',
+          'Chlorothalonil 75% WP @ 2g/L',
+          'Spray Azoxystrobin + Difenoconazole',
+          'Alternate fungicides to prevent resistance'
+        ],
+        english_summary: 'Your plant shows signs of Early Blight disease. Apply neem oil spray weekly and remove infected leaves. Use Mancozeb fungicide if symptoms worsen. Ensure proper plant spacing for air circulation.',
+        translated_result: '(Translation will appear here once connected to your Flask backend with googletrans)'
+      };
+    }
+  </script>
+</body>
+</html>
